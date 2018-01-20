@@ -6,6 +6,7 @@
   "author": "Geeku <ggongpei@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "events": "^1.1.1",
     "zrender": "^4.0.0"
   },
   "scripts": {

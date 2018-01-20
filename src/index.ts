@@ -1,5 +1,5 @@
 import zrender from 'zrender';
-
+import { EventEmiter } from 'events';
 
 const zr = zrender.init(document.querySelector('main'), { renderer: 'svg' });
 // const zr = zrender.init(document.querySelector('main'));
@@ -19,12 +19,19 @@ class ContentQueue {
     }
 }
 
-class BarragePool {
-    private pool = [];
+interface Barrage {
+    el,
+    y: number,
+    free?: boolean;
+}
+class BarragePool extends EventEmiter {
+    private pool: Barrage[] = [];
+    private queue = [];
     
     public size: number = 0;
 
     constructor (size) {
+        super();
         this.size = size;
     }
 
@@ -49,6 +56,25 @@ class BarragePool {
                 y: randomY
             });
         }
+    }
+
+    // Send a barrage
+    biu (opt) {
+        const barrage = this.getFreeOne();
+        if (!barrage) {
+            this.queue.push(opt);
+            return;
+        }
+    }
+
+    getFreeOne () {
+        const l = this.pool.length;
+        for (let i = 0; i < l; i++) {
+            if (this.pool[i].free) {
+                return this.pool[i];
+            }
+        }
+        return null;
     }
 
     *[Symbol.iterator] () {
