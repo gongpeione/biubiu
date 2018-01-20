@@ -1,0 +1,25 @@
+
+{
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "example",
+      "test"
+    ],
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "allowJs": true,
+        "module": "esnext",
+        "target": "es5",
+        "moduleResolution": "node",
+        "isolatedModules": true,
+        "sourceMap": true,
+        "pretty": true,
+        "outDir": "dist",
+        "rootDir": "src"
+    }
+  }

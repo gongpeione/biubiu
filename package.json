@@ -1,0 +1,16 @@
+{
+  "name": "biubiu",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:gongpeione/biubiu.git",
+  "author": "Geeku <ggongpei@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "zrender": "^4.0.0"
+  },
+  "scripts": {
+    "start": "tsc -p . -w && parcel example/index.html",
+    "buildTS": "",
+    "buildExample": ""
+  }
+}
