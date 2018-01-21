@@ -1,21 +1,43 @@
 import zrender from 'zrender';
-import { EventEmiter } from 'events';
+import { EventEmitter } from 'events';
 
-const zr = zrender.init(document.querySelector('main'), { renderer: 'svg' });
+const zr = zrender.init(document.querySelector('main .barrage'), { renderer: 'svg' });
 // const zr = zrender.init(document.querySelector('main'));
 const w = zr.getWidth();
 const h = zr.getHeight();
 const barragePool = [];
 const elPool = [];
 
-class ContentQueue {
-    private pool = [];
+interface Content {
+    txt: string,
+    style: string | [any] | {},
+    time: number
+}
+class ContentQueue extends EventEmitter {
+    private queue: Content[] = [];
+    // private timer;
+
+    constructor () {
+        super();
+        (this as EventEmitter).on('timeupdate', (e) => {
+            console.log(e.timeStamp);
+        });
+    }
     getOne () {
-        if (!this.pool.length) return null;
-        return this.pool.splice(this.pool.length - 1, 1);
+        if (!this.queue.length) return null;
+        return this.queue.splice(this.queue.length - 1, 1);
     }
     add (content) {
-        this.pool.push(content);
+        this.queue.push(content);
+    }
+    // startTimer () {
+    //     !this.timer && (this.timer = requestAnimationFrame(this.walkQueue.bind(this)));
+    // }
+    // stopTimer () {
+    //     cancelAnimationFrame(this.timer);
+    // }
+    walkQueue () {
+        
     }
 }
 
@@ -24,15 +46,30 @@ interface Barrage {
     y: number,
     free?: boolean;
 }
-class BarragePool extends EventEmiter {
+class BarragePool extends EventEmitter {
     private pool: Barrage[] = [];
     private queue = [];
+    private loop: number;
     
     public size: number = 0;
 
     constructor (size) {
         super();
         this.size = size;
+        (this as EventEmitter).on('pause', (e) => {
+            const l = this.pool.length;
+            for (let i = 0; i < l; i++) {
+                if (this.pool[i].free) continue;
+                this.pool[i].el.pause();
+            }
+        });
+        (this as EventEmitter).on('play', (e) => {
+            const l = this.pool.length;
+            for (let i = 0; i < l; i++) {
+                if (this.pool[i].free) continue;
+                this.pool[i].el.resume();
+            }
+        });
     }
 
     init () {
@@ -63,8 +100,17 @@ class BarragePool extends EventEmiter {
         const barrage = this.getFreeOne();
         if (!barrage) {
             this.queue.push(opt);
+            !this.loop && (this.loop = requestAnimationFrame(this.walkQueue.bind(this)));
             return;
         }
+    }
+
+    walkQueue () {
+        if (!this.queue.length) {
+            cancelAnimationFrame(this.loop);
+            return;
+        }
+        this.biu(this.queue.shift());
     }
 
     getFreeOne () {
@@ -86,8 +132,37 @@ class BarragePool extends EventEmiter {
 }
 
 class BarrageManager {
-
+    public w: number;
+    public h: number;
+    private canvas;
+    private video: HTMLVideoElement;
+    private opt;
+    private barrage: BarragePool;
+    private content: ContentQueue;
+    constructor (canvas, video, opt?) {
+        this.opt = opt || {};
+        this.canvas = zrender.init(
+            document.querySelector(canvas), 
+            { 
+                renderer: this.opt.renderer || 'canvas' 
+            }
+        );
+        this.video = document.querySelector(video);
+        this.video.addEventListener('timeupdate', (e) => {
+            (this.content as EventEmitter).emit('timeupdate', e);
+        });
+        this.video.addEventListener('pause', (e) => {
+            (this.barrage as EventEmitter).emit('pause', e);
+        });
+        this.video.addEventListener('play', (e) => {
+            (this.barrage as EventEmitter).emit('play', e);
+        });
+        this.barrage = new BarragePool(20);
+        this.content = new ContentQueue();
+    }
 }
+
+new BarrageManager('main .barrage', 'main video');
 
 for (let i = 0; i < 50; i++) {
     const randomY = h * Math.random();

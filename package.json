@@ -10,8 +10,8 @@
     "zrender": "^4.0.0"
   },
   "scripts": {
-    "start": "tsc -p . -w && parcel example/index.html",
-    "buildTS": "",
+    "ts": "tsc -p . -w && parcel example/index.html",
+    "server": "parcel example/index.html --out-dir example/dist",
     "buildExample": ""
   }
 }
